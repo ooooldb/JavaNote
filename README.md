@@ -1,0 +1,50 @@
+# Java笔记
+## Java基础
+- 基础语法
+- 面向对象
+- 集合
+- I/O
+- 多线程
+- JVM
+## 数据库
+- MySQL
+- Oracle
+- HBase
+## 框架
+- Spring
+- MyBatis
+- Netty
+## NoSQL
+- Redis
+- MongoDB
+- Neo4j
+
+[1.图数据库及Neo4j][1]
+[2.Neo4j的SQL——Cypher][2]
+
+## 消息队列
+- Kafka
+- RabbitMQ
+## Web工具
+### 搜索
+- Lucene
+- Solr
+- ElasticSearch
+### 权限管理
+- Shiro
+- Spring Security
+### 定时任务
+- Timer
+- Spring Task
+- Quartz
+### 反向代理
+- Nginx
+### 数据库中间件
+- MyCat
+- ShardingSphere
+### 分布式
+### 大数据
+
+[1]: http://google.com/        "图数据库及Neo4j" 
+[2]: http://search.yahoo.com/  "Yahoo Search" 
+[3]: http://search.msn.com/    "MSN Search"
