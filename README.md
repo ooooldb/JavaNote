@@ -20,6 +20,7 @@
 - Neo4j
 
 [1.图数据库及Neo4j][1]
+
 [2.Neo4j的SQL——Cypher][2]
 
 ## 消息队列
@@ -45,6 +46,6 @@
 ### 分布式
 ### 大数据
 
-[1]: http://google.com/        "图数据库及Neo4j" 
-[2]: http://search.yahoo.com/  "Yahoo Search" 
+[1]: https://github.com/ooooldb/JavaNote1/blob/master/docs/NoSQL/Neo4j1.md        "图数据库及Neo4j" 
+[2]: https://github.com/ooooldb/JavaNote1/blob/master/docs/NoSQL/Neo4j2.md  "Yahoo Search" 
 [3]: http://search.msn.com/    "MSN Search"
