@@ -20,7 +20,7 @@ ActiveMQ，RabbitMQ，Kafka，RocketMQ
 
 ## RabbitMQ
 
-用erlang开发，基于AMQP（Advanced Message Queue Protocol高级消息队列协议）实现的消息队列。
+用Erlang开发，基于AMQP（Advanced Message Queue Protocol高级消息队列协议）实现的消息队列。
 
 ### JMS
 
