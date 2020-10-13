@@ -26,14 +26,17 @@
 ## 消息队列
 - Kafka
 - RabbitMQ
+- RocketMQ
+- Pulsar
 ## Web工具
 ### 搜索
 - Lucene
-- Solr
 - ElasticSearch
+- Loki
+- Solr
 ### 权限管理
-- Shiro
 - Spring Security
+- Shiro
 ### 定时任务
 - Timer
 - Spring Task
