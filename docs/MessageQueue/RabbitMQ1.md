@@ -320,3 +320,11 @@ Channel.queueDeclare(String queue, boolean durable, boolean exclusive, boolean a
 
 ### Spring Boot 整合
 
+
+
+## Linux指令
+查看队列和消息数
+```
+sudo rabbitmqctl list_queues
+```
+
