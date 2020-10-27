@@ -49,6 +49,6 @@
 ### 分布式
 ### 大数据
 
-[1]: https://github.com/ooooldb/JavaNote1/blob/master/docs/NoSQL/Neo4j1.md        "图数据库及Neo4j" 
-[2]: https://github.com/ooooldb/JavaNote1/blob/master/docs/NoSQL/Neo4j2.md  "Yahoo Search" 
+[1]: https://github.com/ooooldb/JavaNote1/blob/master/docs/NoSQL/Neo4j1.md        "Neo4j1" 
+[2]: https://github.com/ooooldb/JavaNote1/blob/master/docs/NoSQL/Neo4j2.md  "Neo4j2" 
 [3]: http://search.msn.com/    "MSN Search"

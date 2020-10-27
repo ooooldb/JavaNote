@@ -3,24 +3,29 @@
 ### 安装
 
 #### Windows
+1.下载
 
 地址：
 
-官网
+`官网`
 
 https://neo4j.com/download/
 
-第三方
+`第三方`
 
 http://we-yun.com/index.php/blog/releases-56.html
 
-解压
+2.解压
+
+3.启动
 
 cd bin
 
 (打开PowerShell)
 
 ./neo4j.bat console 启动
+
+4.测试
 
 访问地址
 
@@ -167,39 +172,6 @@ match (a)-[r]-(b) return a,r,b
 match (a:Student) where a.name = '胖妞' return a order by id(a) desc skip 0 limit 1
 ```
 
-##### where条件
-
-基本与SQL一致
-
-`eg:`
-
-```
-match (n:People) where id(n) = 12 or n.name = 'Jobs' return n
-```
-
-##### 排序 order by子句
-
-```
-ORDER BY  <property-name-list>  [DESC]	 
-```
-
-`eg:`
-
-返回Employee的部分属性，结果按name升序排列
-```
-MATCH (emp:Employee)
-RETURN emp.empid,emp.name,emp.salary,emp.deptno
-ORDER BY emp.name
-```
-
-返回带有三条以上FRIEND关系的name为John的节点和关系数
-```
-MATCH (n {name: 'John'})-[:FRIEND]-(friend)
-WITH n, count(friend) AS friendsCount
-WHERE friendsCount > 3
-RETURN n, friendsCount
-```
-
 ##### union子句
 
 - UNION 对结果去重
@@ -222,30 +194,6 @@ MATCH (dc:DebitCard) RETURN dc.id,dc.number
 
 union all格式一致
 
-##### LIMIT和SKIP子句
-
-LIMIT子句用来过滤或限制查询返回的行数
-SKIP子句用来修整CQL查询结果集顶部的结果
-
-语法
-
-```
-LIMIT <number>
-
-SKIP <number>
-```
-
-eg
-
-```
-MATCH (emp:Employee) 
-RETURN emp
-LIMIT 2
-
-MATCH (emp:Employee) 
-RETURN emp
-SKIP 2
-```
 ##### WITH 
 对结果进行过滤
 ```
@@ -255,7 +203,8 @@ WHERE friendsCount > 3
 RETURN n, friendsCount
 ```
 ##### OPTION MATCH
-作用相当于SQL里的 Left Join ，
+作用相当于SQL里的 Left Join
+
 # Delete条件
 
 ##### 作用
@@ -297,10 +246,6 @@ DELETE cc,c,rel
 
 - Delete用于删除节点和关联关系。
 - Remove用于删除标签和属性
-
-相似性
-
-- 这两个命令不应单独使用。两个命令都应该与MATCH命令一起使用。
 
 ```
 MATCH (book { id:122 })
@@ -495,3 +440,4 @@ RETURN size((a)-->()-->()) AS fof
 - sum()：求和，在求和时，null被排除在外，sum(null)的结果是0
 - collect()：把返回的多个值或记录组装成一个列表，collect(null)返回一个空的列表
 ## APOC
+https://neo4j.com/labs/apoc/4.1/
