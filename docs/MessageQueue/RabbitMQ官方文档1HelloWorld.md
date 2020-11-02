@@ -1,15 +1,14 @@
-# 介绍
-## 前提条件
+# 前提条件
 本教程假定RabbitMQ已在标准端口（5672）的localhost上安装并运行。
 
-如果您使用其他主机，端口或凭据，则连接设置需要进行调整。
-### 在哪里获得帮助
+如果您使用其他主机，端口或证书，则连接设置需要进行调整。
+# 在哪里获得帮助
 如果您在阅读本教程时遇到困难，可以通过[邮件列表][1]或[RabbitMQ社区Slack][2]与我们联系。
 
-## 介绍
-RabbitMQ是一个消息代理中间件：它接收并转发消息。
+#介绍
+RabbitMQ是一个消息代理服务器：它接收并转发消息。
 
-可以将其比喻为邮局：将要投递的邮件放在邮箱中时，你可以确认为邮差小哥最终会将邮件交付给收件人。
+可以将其想象成邮局：将要投递的邮件放在邮箱中时，你可以确定邮差小哥最终会将邮件交付给收件人。
 以此类推，RabbitMQ是邮箱+邮局+邮递员。
 
 RabbitMQ与邮局之间的主要区别在于：它不处理纸张，而是接收，存储和转发二进制数据。
@@ -72,7 +71,7 @@ public class Send {
 ```
 
 然后我们可以创建一个到服务器的连接：
-```
+```java
 ConnectionFactory factory = new ConnectionFactory();
 factory.setHost("localhost");
 try (Connection connection = factory.newConnection();
@@ -85,7 +84,7 @@ try (Connection connection = factory.newConnection();
 接下来，我们创建一个通道，该通道是完成工作的大多数API所在的位置。注意，我们可以使用try-with-resources语句，因为Connection和Channel都实现java.io.Closeable。这样，我们无需在代码中显式关闭它们。
 
 要发送，我们必须声明要发送到的队列。然后我们可以在try-with-resources语句中将消息发布到队列中：
-```
+```java
 channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 String message = "Hello World!";
 channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
@@ -137,7 +136,7 @@ public class Recv {
 
 我们将告诉服务器将队列中的消息传递给我们。由于它将异步地向我们发送消息，因此我们以对象的形式提供了一个回调，该回调将缓冲消息，直到我们准备使用它们为止。这就是DeliverCallback子类所做的。
 
-```
+```java
 DeliverCallback deliverCallback = (consumerTag, delivery) -> {
     String message = new String(delivery.getBody(), "UTF-8");
     System.out.println(" [x] Received '" + message + "'");
@@ -147,7 +146,7 @@ channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
 
 [这是整个Recv.java类][5]。
 
-全部放在一起
+## 全部放在一起
 您可以仅使用classpath上的RabbitMQ Java客户端来编译这两个文件：
 ```
 javac -cp amqp-client-5.7.1.jar Send.java Recv.java
