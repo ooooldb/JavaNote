@@ -31,99 +31,102 @@
 
 ![](https://www.rabbitmq.com/img/tutorials/python-five.png)
 
-在此示例中，我们将发送所有描述动物的消息。将使用包含三个词（两个点）的路由键发送消息。路由键中的第一个单词将描述速度，第二个是颜色，第三个是物种：“ <speed>.<color>.<species> ”。
+在此示例中，我们将发送的消息全部都是描述动物的。将使用包含三个词（两个点）的路由键发送消息。路由键中的第一个单词将描述速度，第二个是颜色，第三个是物种：“<speed>.<color>.<species>”。
 
-我们创建了三个绑定：Q1与绑定键“ * .orange。* ”绑定，Q2与“ *。*。rabbit ”和“ lazy。＃ ”绑定。
+我们创建了三个绑定：Q1与绑定键“\*.orange.\*”绑定，Q2与“\*.\*.rabbit”、“lazy.#”绑定。
 
 这些绑定可以总结为：
 
-Q1对所有橙色动物都感兴趣。
-第2季想听听有关兔子的一切，以及有关懒惰动物的一切。
-路由键设置为“ quick.orange.rabbit ”的消息将传递到两个队列。消息“ lazy.orange.elephant ”也将发送给他们两个。另一方面，“ quick.orange.fox ”只会进入第一个队列，而“ lazy.brown.fox ”只会进入第二个队列。“ lazy.pink.rabbit ”将被传递到第二队只有一次，即使两个绑定匹配。“ quick.brown.fox ”与任何绑定都不匹配，因此将被丢弃。
+- Q1对所有橙色动物都感兴趣。
+- Q2想听有关兔子的一切，以及有关懒惰动物的一切。
 
-如果我们违反合同并发送一个或四个单词的消息，例如“橙色”或“ quick.orange.male.rabbit ”，会发生什么？好吧，这些消息将不匹配任何绑定，并且将会丢失。
+路由键设置为“ quick.orange.rabbit ”的消息将传递到两个队列。消息“ lazy.orange.elephant ”也将发送给他们两个。另一方面，“quick.orange.fox ”只会进入第一个队列，而“ lazy.brown.fox ”只会进入第二个队列。“ lazy.pink.rabbit ”只会被传递到Q2一次，即使有两个绑定键匹配。“ quick.brown.fox ”与任何绑定都不匹配，因此将被丢弃。
+
+如果我们违反合同并发送一个或四个单词的消息，例如“orange”或“ quick.orange.male.rabbit ”，会发生什么？好吧，这些消息将不匹配任何绑定键，并且将会被丢失。
 
 另一方面，“ lazy.orange.male.rabbit ”即使有四个单词，也将匹配最后一个绑定，并将其传送到第二个队列。
 
-话题交流
-主题交流功能强大，可以像其他交流一样进行。
+## Topic 交换器
 
-当队列用“ ＃ ”（哈希）绑定键绑定时，它将接收所有消息，而与路由键无关，就像在扇出交换中一样。
+Topic 交换器功能强大，而且可以模拟其他交换器的行为。
 
-当在绑定中不使用特殊字符“ * ”（星号）和“ ＃ ”（哈希）时，主题交换的行为就像直接的一样。
+当队列用“#”（哈希）绑定键绑定时，它将接收所有消息，而与路由键无关，就像在`fanout`交换器中一样。
 
-全部放在一起
-我们将在日志记录系统中使用主题交换。我们将从一个可行的假设开始，即日志的路由键将包含两个词：“ <facility>。<severity> ”。
+当在绑定中不使用特殊字符“*”（星号）和“#”（哈希）时，行为就像`direct`交换器。
+
+## 全部放在一起
+
+我们将在日志记录系统中使用`topic`交换器。我们将从一个可行的假设开始，即日志的路由键将包含两个词：“<facility>.<severity>”。
 
 该代码与上一教程中的代码几乎相同 。
+```java
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 
-EmitLogTopic.java的代码：
+public class EmitLogTopic {
 
-导入com.rabbitmq.client.Channel;
-导入com.rabbitmq.client.Connection;
-导入com.rabbitmq.client.ConnectionFactory;
+  private static final String EXCHANGE_NAME = "topic_logs";
 
-公共 类 EmitLogTopic  {
+  public static void main(String[] argv) throws Exception {
+    ConnectionFactory factory = new ConnectionFactory();
+    factory.setHost("localhost");
+    try (Connection connection = factory.newConnection();
+         Channel channel = connection.createChannel()) {
 
-  私有 静态 最终字符串EXCHANGE_NAME = “ topic_logs” ;
+        channel.exchangeDeclare(EXCHANGE_NAME, "topic");
 
-  公共 静态 void 主对象（String [] argv） 引发异常{
-    ConnectionFactory工厂=新的ConnectionFactory（）;
-    factory.setHost（“ localhost”）;
-    尝试（连接连接= factory.newConnection（）;
-         频道频道= connection.createChannel（））{
+        String routingKey = getRouting(argv);
+        String message = getMessage(argv);
 
-        channel.exchangeDeclare（EXCHANGE_NAME，“ topic”）;
-
-        字符串routingKey = getRouting（argv）;
-        字符串消息= getMessage（argv）;
-
-        channel.basicPublish（EXCHANGE_NAME，routingKey，null，message.getBytes（“ UTF-8”））;
-        System.out.println（“ [x]发送'” + routingKey + “'：'” +消息+ “'”）;
+        channel.basicPublish(EXCHANGE_NAME, routingKey, null, message.getBytes("UTF-8"));
+        System.out.println(" [x] Sent '" + routingKey + "':'" + message + "'");
     }
   }
-  // ..
+  //..
 }
+```
 ReceiveLogsTopic.java的代码：
+```java
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.DeliverCallback;
 
-导入com.rabbitmq.client.Channel;
-导入com.rabbitmq.client.Connection;
-导入com.rabbitmq.client.ConnectionFactory;
-导入com.rabbitmq.client.DeliverCallback;
+public class ReceiveLogsTopic {
 
-公共 类 ReceiveLogsTopic  {
+  private static final String EXCHANGE_NAME = "topic_logs";
 
-  私有 静态 最终字符串EXCHANGE_NAME = “ topic_logs” ;
+  public static void main(String[] argv) throws Exception {
+    ConnectionFactory factory = new ConnectionFactory();
+    factory.setHost("localhost");
+    Connection connection = factory.newConnection();
+    Channel channel = connection.createChannel();
 
-  公共 静态 void 主对象（String [] argv） 引发异常{
-    ConnectionFactory工厂=新的ConnectionFactory（）;
-    factory.setHost（“ localhost”）;
-    连接connection = factory.newConnection（）;
-    Channel channel = connection.createChannel（）;
+    channel.exchangeDeclare(EXCHANGE_NAME, "topic");
+    String queueName = channel.queueDeclare().getQueue();
 
-    channel.exchangeDeclare（EXCHANGE_NAME，“ topic”）;
-    字符串queueName = channel.queueDeclare（）。getQueue（）;
-
-    如果（argv.length < 1）{
-        System.err.println（“用法：ReceiveLogsTopic [binding_key] ...”）;
-        System.exit（1）;
+    if (argv.length < 1) {
+        System.err.println("Usage: ReceiveLogsTopic [binding_key]...");
+        System.exit(1);
     }
 
-    对于（String bindingKey：argv）{
-        channel.queueBind（queueName，EXCHANGE_NAME，bindingKey）;
+    for (String bindingKey : argv) {
+        channel.queueBind(queueName, EXCHANGE_NAME, bindingKey);
     }
 
-    System.out.println（“ [*]等待消息。要退出，请按CTRL + C”）;
+    System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
-    DeliverCallback deliveryCallback =（consumerTag，交付）-> {
-        字符串消息=新字符串（delivery.getBody（），“ UTF-8”）;
-        System.out.println（“ [x]收到'” +
-            delivery.getEnvelope（）。getRoutingKey（）+ “'：'” +消息+ “'”）;
+    DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+        String message = new String(delivery.getBody(), "UTF-8");
+        System.out.println(" [x] Received '" +
+            delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
     };
-    channel.basicConsume（queueName，true，deliveryCallback，ConsumerTag-> {}）;
+    channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
   }
 }
-编译并运行示例，包括如教程1中所述的类路径-在Windows上，请使用％CP％。
+```
+编译并运行示例，包括如教程1中所述的类路径-在Windows上，请使用%CP%。
 
 编译：
 
