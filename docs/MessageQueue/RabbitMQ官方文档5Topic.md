@@ -129,25 +129,29 @@ public class ReceiveLogsTopic {
 编译并运行示例，包括如教程1中所述的类路径-在Windows上，请使用%CP%。
 
 编译：
-
-javac -cp $ CP ReceiveLogsTopic.java EmitLogTopic.java
+```
+javac -cp $CP ReceiveLogsTopic.java EmitLogTopic.java
+```
 接收所有日志：
-
-java -cp $ CP ReceiveLogsTopic “＃”
-要从设施“ kern ”接收所有日志：
-
-java -cp $ CP ReceiveLogsTopic “ kern。*”
-或者，如果您只想听听“关键”日志：
-
-java -cp $ CP ReceiveLogsTopic “ * .critical”
+```
+java -cp $CP ReceiveLogsTopic "#"
+```
+接收“kern”的所有日志：
+```
+java -cp $CP ReceiveLogsTopic "kern.*"
+```
+接收“critical”的所有日志：
+```
+java -cp $CP ReceiveLogsTopic "*.critical"
+```
 您可以创建多个绑定：
-
-java -cp $ CP ReceiveLogsTopic “ kern。*”  “ * .critical”
-并发出带有路由键“ kern.critical ”类型的日志：
-
-java -cp $ CP EmitLogTopic “ kern.critical”  “严重的内核错误”
-玩这些程序玩得开心。请注意，该代码对路由键或绑定键没有任何假设，您可能需要使用两个以上的路由键参数。
-
-（EmitLogTopic.java 和ReceiveLogsTopic.java的完整源代码）
+```
+java -cp $CP ReceiveLogsTopic "kern.*" "*.critical"
+```
+发出带有路由键“ kern.critical ”类型的日志：
+```
+java -cp $CP EmitLogTopic "kern.critical" "A critical kernel error"
+```
+请注意，该代码对路由键或绑定键没有任何假设，您可能需要使用两个以上的路由键参数。
 
 接下来，在教程6中找出如何作为远程过程调用来回程消息
