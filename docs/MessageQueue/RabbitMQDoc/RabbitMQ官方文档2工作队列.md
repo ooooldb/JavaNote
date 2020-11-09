@@ -150,18 +150,20 @@ channel.basicConsume(TASK_QUEUE_NAME, autoAck, deliverCallback, consumerTag -> {
 
 确认的Ack必须在收到消息的同一通道上发送。尝试使用其他通道进行确认将导致通道级协议异常。请参阅有关确认的文档指南 以了解更多信息。
 
-    被遗忘的确认
-    
-    错过basicAck是一个常见的错误。这是一个简单的错误，但是后果很严重。当您的客户端退出时，消息将被重新发送（看起来像是随机重新发送），但是RabbitMQ将消耗越来越多的内存，因为它将无法释放任何未确认的消息。
+## 被遗忘的确认
 
-    为了调试这种错误，您可以使用rabbitmqctl 打印messages_unacknowledged字段：
+错过`basicAck`是一个常见的错误。这是一个简单的错误，但是后果很严重。当您的客户端退出时，消息将被重新发送（看起来像是随机重新发送），但是RabbitMQ将消耗越来越多的内存，因为它将无法释放任何未确认的消息。
 
-    sudo rabbitmqctl list_queues名称messages_ready messages_unacknowledged
-    
-    在Windows上，删除sudo：
+为了调试这种错误，您可以使用`rabbitmqctl`打印`messages_unacknowledged`字段：
+```
+sudo rabbitmqctl list_queues name messages_ready messages_unacknowledged
+```
 
-    rabbitmqctl.bat list_queues名称messages_ready messages_unacknowledged
-    
+在Windows上：
+
+```
+rabbitmqctl.bat list_queues name messages_ready messages_unacknowledged
+```  
 ## 消息持久化
 
 我们已经学会了如何确保即使消费者死亡，任务也不会丢失。但是，如果RabbitMQ服务器停止，我们的任务仍然会丢失。
