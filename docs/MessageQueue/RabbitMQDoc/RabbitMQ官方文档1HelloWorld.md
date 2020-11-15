@@ -15,10 +15,11 @@
 # 在哪里获得帮助
 如果您在阅读本教程时遇到困难，可以通过[邮件列表][1]或[RabbitMQ社区Slack][2]与我们联系。
 
-#介绍
+# 介绍
 RabbitMQ是一个消息代理服务器：它接收并转发消息。
 
 可以将其想象成邮局：将要投递的邮件放在邮箱中时，你可以确定邮差小哥最终会将邮件交付给收件人。
+
 以此类推，RabbitMQ是邮箱+邮局+邮递员。
 
 RabbitMQ与邮局之间的主要区别在于：它不处理纸张，而是接收，存储和转发二进制数据。
@@ -39,9 +40,10 @@ RabbitMQ以及消息传递一般会使用一些术语：
 
 请注意，生产者，消费者和消息代理服务器不必位于同一主机上。实际上，在大多数应用程序中它们不是。一个应用程序既可以是生产者，也可以是消费者。
 
-“Hello World”
-（使用Java客户端）
-在本教程的这一部分中，我们将用Java编写两个程序。一个发送单个消息的生产者和一个接收消息并打印出来的消费者。我们将介绍Java API中的一些细节，仅着眼于此非常简单的事情。这是消息传递的“ Hello World”。
+## Hello World
+
+**（使用Java客户端）**
+在本教程的这一部分中，我们将用Java编写两个程序。一个发送单个消息的生产者和一个接收消息并打印出来的消费者。我们将介绍Java API中的一些细节，仅着眼于此非常简单的事情。这是消息传递的“Hello World”。
 
 在下图中，“P”是我们的生产者，“ C”是我们的消费者。中间的框是一个队列-一个RabbitMQ代使用者保留的消息缓冲区。
 
@@ -68,7 +70,7 @@ RabbitMQ以及消息传递一般会使用一些术语：
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
-```    
+```
 
 编写类并命名队列：
 ```java
@@ -201,11 +203,11 @@ java -cp .:amqp-client-5.7.1.jar:slf4j-api-1.7.26.jar:slf4j-simple-1.7.26.jar Se
 
 原文链接: [RabbitMQ_HelloWorld_Java][3]
 
-[1]: https://groups.google.com/forum/#!forum/rabbitmq-users        ""
-[2]: https://rabbitmq-slack.herokuapp.com/  ""
-[3]: https://www.rabbitmq.com/tutorials/tutorial-one-java.html  ""
-[4]: https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/java/Send.java  ""
-[5]: https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/java/Recv.java  ""
-[6]: https://www.rabbitmq.com/confirms.html  ""
-[7]: https://www.rabbitmq.com/production-checklist.html  ""
-[8]: https://www.rabbitmq.com/monitoring.html  ""
+[1]: https://groups.google.com/forum/#!forum/rabbitmq-users
+[2]: https://rabbitmq-slack.herokuapp.com/
+[3]: https://www.rabbitmq.com/tutorials/tutorial-one-java.html
+[4]: https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/java/Send.java
+[5]: https://github.com/rabbitmq/rabbitmq-tutorials/blob/master/java/Recv.java
+[6]: https://www.rabbitmq.com/confirms.html
+[7]: https://www.rabbitmq.com/production-checklist.html
+[8]: https://www.rabbitmq.com/monitoring.html

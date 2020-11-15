@@ -51,50 +51,57 @@ rabbitmqctl  change_password  guest  '123456'
 
 ### 相关概念介绍
 
+RabbitMQ是一个消息代理服务器：它接收并转发消息。
 
-
-RabbitMQ整体上是一个生产者与消费者模型，主要负责接受、存储和转发消息。从计算机术语层面来说，RabbitMQ模型更像是一种交换机模型。
 ![](./assets/45a89ec9.png)
 
-#### 生产者和消费者
-
-##### Producer
+#### Producer
 
 生产者，投递消息的一方。
 
-生产者创建消息，然后发布到RabbitMQ中。消息一般可以包含2个部分：消息体和标签（Label）。
+生产者创建消息，然后发布到RabbitMQ中。
+
+#### Message
+
+消息一般可以包含2个部分：消息体和标签（Label）。
 
 消息体也可以称之为payload（在实际应用中一般是一个带有业务逻辑结构的数据，比如JSON字符串）。
 
-消息的标签用来表诉这条消息，比如一个交换器的名称和一个路由键。生产者把消息交由RabbitMQ，RabbitMQ之后会根据标签把消息发送给感兴趣的消费者。
+消息的标签用来定义这条消息的发送途径，比如一个交换器的名称和一个路由键。生产者把消息交由RabbitMQ，RabbitMQ之后会根据标签把消息发送给感兴趣的消费者。
 
-##### Consumer
+在消息路由的过程中，消息的标签会丢弃，存入到队列中的消息只有消息体。
+
+#### Consumer
 
 消费者，接受消息的一方。
 
-消费者连接到RabbitMQ服务器，并订阅到队列上。当消费者消费一条消息时，只是消费消息的消息体（payload）。在消息路由的过程中，消息的标签会丢弃，存入到队列中的消息只有消息体。
+消费者是一个通常在等待接收消息的程序。
+#### Broker
 
-##### Broker
-
-消息中间件的服务节点。
+RabbitMQ的服务节点。
 
 ![](./assets/1f3471ae.png)
 
-##### 队列
+#### Queue
 
-RabbitMQ的内部对象，用于存储消息。RabbitMQ中消息都只能存储在队列中。
+队列，RabbitMQ的内部对象，用于存储消息。RabbitMQ中消息只能存储在队列中。
 
-多个消费者可以订阅同一个队列，这是队列中的消息会被平均分摊（即轮询）给多个消费者进行处理，而不是每个消费者都收到所有的消息并处理。
+它本质上是一个大的消息缓冲器。许多生产者可以将消息发送到一个队列，许多消费者可以尝试从一个队列接收数据。
 
-##### 交换器
+多个消费者可以订阅同一个队列，这时队列中的消息会被平均分摊（即轮询）给多个消费者进行处理，而不是每个消费者都收到所有的消息并处理。
 
-Exchange。实际上生产者将消息发送到Exchange，由交换器将消息路由到一个或多个队列中。
+#### Exchange
+
+交换器。实际上生产者将消息发送到Exchange，由交换器将消息路由到一个或多个队列中。
 
 如果路由不到，会根据抛弃策略处理消息。
+##### 绑定
 
-*交换器类型*
+RabbitMQ中通过绑定将交换器和队列关联起来，在绑定的时候一般会指定一个绑定键，这样RabbitMQ就知道如何正确地将消息路由到队列了
 
-RabbitMQ常用的交换器类型有fanout、direct、topic、headers这四种。（AMQP协议里还提到了System和自定义
+##### 交换器类型
+
+RabbitMQ常用的交换器类型有`fanout`、`direct`、`topic`、`headers`这四种。（AMQP协议里还提到了System和自定义)
 
 `fanout`
 
@@ -116,13 +123,10 @@ headers不依赖路由键的匹配规则来路由消息，而是根据发送的�
 
 ##### 路由键
 
-路由键。生产者将消息发给交换器的时候，一般会指定一个RoutingKey，用来指定这个消息的路由规则，而这个一般会指定一个RoutingKey需要与交换器类型和绑定键联合使用才能最终生效。
+路由键。生产者将消息发给交换器的时候，一般会指定一个`RoutingKey`，用来指定这个消息的路由规则，而这个一般会指定一个`RoutingKey`需要与交换器类型和绑定键联合使用才能最终生效。
 
 在交换器类型和绑定键固定的情况下，生产者可以在发送消息给交换器时，通过指定RoutingKey来决定消息流向哪里
 
-##### 绑定
-
-RabbitMQ中通过绑定将交换器和队列关联起来，在绑定的时候一般会指定一个绑定键，这样RabbitMQ就知道如何正确地将消息路由到队列了
 
 ##### Connection、Channel
 
@@ -320,8 +324,117 @@ Channel.queueDeclare(String queue, boolean durable, boolean exclusive, boolean a
 
 ### Spring Boot 整合
 
+**1.依赖**
+配置 Pom 包，主要是添加`spring-boot-starter-amqp`的支持
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-amqp</artifactId>
+</dependency>
+```
+**2.配置文件**
+配置`RabbitMQ`的安装地址、端口以及账户信息
+```properties
+spring:
+  application:
+    name: spring-boot-rabbitmq
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+```
+**3、队列配置**
+```java
+@Configuration
+public class RabbitConfig {
+    @Bean
+    public Queue Queue() {
+        return new Queue("hello");
+    }
+}
+```
+**4.消费者与生产者**
 
+生产者
 
+```java
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+
+@Component
+public class HelloSender {
+
+	@Autowired
+	private AmqpTemplate rabbitTemplate;
+
+	public void send() {
+		String context = "hello " + new Date();
+		System.out.println("Sender : " + context);
+		this.rabbitTemplate.convertAndSend("hello", context);
+	}
+
+}
+```
+
+消费者
+
+```java
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
+
+@Component
+@RabbitListener(queues = "hello")
+public class HelloReceiver {
+
+    @RabbitHandler
+    public void process(String hello) {
+        System.out.println("Receiver  : " + hello);
+    }
+
+}
+```
+**5.测试**
+```java
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class RabbitMqHelloTest {
+
+    @Autowired
+    private HelloSender helloSender;
+
+    @Test
+    public void hello() throws Exception {
+        helloSender.send();
+    }
+
+}
+```
+#### 对象的使用
+User需要实现`Serializable`接口
+```java
+//发送者
+public void sendUser(User user) {
+    System.out.println("Sender object: " + user.toString());
+    this.rabbitTemplate.convertAndSend("hello", user);
+}
+
+...
+
+//接收者
+@RabbitHandler
+public void process(User user) {
+    System.out.println("Receiver object : " + user);
+}
+```
+#### Topic Exchange
+topic 是 RabbitMQ 中最灵活的一种方式，可以根据 routing_key 自由的绑定不同的队列
+
+首先对 topic 规则配置
 ## Linux指令
 查看队列和消息数
 ```
