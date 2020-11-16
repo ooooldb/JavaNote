@@ -104,59 +104,125 @@ docker info
 
 `启动`:
 ```
-sudo systemctl start docker
+systemctl start docker
+```
+
+`停止`:
+```
+systemctl stop docker
 ```
 
 `重启`:
 ```
-sudo systemctl restart docker
+systemctl restart docker
+```
+
+`查看启动状态`:
+```
+systemctl status docker
+```
+
+`查看版本`:
+```
+docker -v
+```
+
+`设置开机自启`:
+```
+systemctl enable docker
+```
+
+`查看概要信息`:
+```
+docker info
+```
+
+`查看docker的所有命令`:
+```
+docker --help
+```
+
+## 镜像级别
+
+`搜索镜像`:
+```
+docker search image_name
+```
+
+NAME | DESCRIPTION | STARS | OFFICIAL | AOTOMATED
+---|---|---|---|---
+仓库名称 | 镜像描述 | 评价 | 是否官方 | 自动构建，表示该镜像由Docker Hub自动构建流程创建的
+
+`镜像的获取`:
+```
+docker pull image_name:version
+# 不带version默认拉取最新版本的镜像
+```
+
+`查看本地镜像`:
+```
+docker images
+```
+
+REPOSITORY | TAG | IMAGE ID | CREATED | SIZE
+---|---|---|---|---
+镜像名称 | 镜像标签 | 镜像ID | 镜像的创建日期 | 镜像大小
+
+`删除镜像`:
+```
+docker rmi 镜像ID|名称
+
+# 删除所有
+docker rmi `docker images -q`
 ```
 
 ## 容器级别
 
-### 镜像的获取
-
-```
-docker pull image_name:version
-```
-不带version默认拉取最新版本的镜像
-
 ### 容器的启动、停止、重启
 
-启动容器
+`启动容器 docker run`:
+
+参数
+- `-l`:表示运行容器
+- `-t`:表示容器启动后会进入其命令行。加入这两个参数后，容器创建就能登录进去。即分配一个伪终端。
+- `-name`:为创建的容器命名
+- `-v`:添加宿主机与容器目录映射关系（前者是宿主机目录，后者是容器目录），可以使用多个`-v`添加多个目录或文件映射。推荐使用该方法共享文件。
+- `-d`:创建守护式容器在后台运行（这样不会自动登录容器，在加了`-t` `-d`之后也是）
+- `-p`:添加端口映射（前者宿主机端口，后者容器端口），可以使用多个`-p`添加多个端口映射。
 ```
-docker run ubuntu:15.10 /bin/echo "Hello world"
-```
-停止容器
-```
-docker stop name/container id
-```
-重启容器
-```
-docker restart container id
+# 交互式方式创建容器(自动进入容器)
+docker run -it --name= containerName image_name:tag /bin/bash
+
+# 后台守护方式创建容器
+docker run -id --name= containerName image_name:tag
 ```
 
-启动已停止容器
-1. `docker attach` 退出后关闭容器
-2. `docker exec` 退出后容器继续运行
+`停止容器`:
 ```
-docker start e46b1023dd7e(container id)
+docker stop name|containerId
 ```
 
-参数解析
+`重启容器`:
+```
+docker restart containerId
+```
 
-`docker`：Docker的二进制文件
-
-`run、stop、restart`：与docker组合运行、停止、重启一个容器
-
-`ubuntu`:15.10：指定要运行的镜像，Docker首先从本地主机上查找镜像是否存在，如果不存在，从镜像仓库Docker Hub上下载
-
-`/bin/echo "Hello world"`: 在启动的容器里执行的命令
-
-通过 docker 的两个参数`-i  `,`-t`，让 docker 运行的容器实现"对话"的能力：
+`启动已停止容器`:
 
 ```
-docker run -i -t ubuntu:15.10 /bin/bash
+docker start containerId
+```
+
+`进入容器内部`：
+```
+# 退出后关闭容器
+docker attach containerName /bin/bash
+
+# 退出后容器继续运行
+docker exec -it containerName /bin/bash
+
+# 退出容器
+exit
 ```
 
 打印日志存储位置
@@ -177,16 +243,17 @@ service docker restart
 curl http://localhost:5492/version
 ```
 
-### 查看运行中的进程
+### 查看容器
 
 ```
+# 正在运行
 docker ps
-可选参数
--a 查看所有
+# 查看所有
+docker ps -a
 ```
 
 ### 查看打印日志
 
 ```
-docker logs 2b1b7a428627(container id)
+docker logs containerId
 ```
