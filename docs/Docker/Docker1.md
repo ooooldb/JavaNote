@@ -180,7 +180,17 @@ docker rmi `docker images -q`
 
 ### 容器的启动、停止、重启
 
-`启动容器 docker run`:
+`查看容器`:
+```
+# 正在运行
+docker ps
+# 查看所有
+docker ps -a
+```
+
+`run容器 docker run`:
+
+（这里的run一般是通过镜像创建容器并启动）
 
 参数
 - `-l`:表示运行容器
@@ -195,6 +205,14 @@ docker run -it --name= containerName image_name:tag /bin/bash
 
 # 后台守护方式创建容器
 docker run -id --name= containerName image_name:tag
+```
+
+`start容器`:
+
+（这里的启动指容器已经创建，处于停止状态，运行`docker start`命令去启动它）
+
+```
+docker start containerId
 ```
 
 `停止容器`:
@@ -215,9 +233,6 @@ docker start containerId
 
 `进入容器内部`：
 ```
-# 退出后关闭容器
-docker attach containerName /bin/bash
-
 # 退出后容器继续运行
 docker exec -it containerName /bin/bash
 
@@ -225,31 +240,38 @@ docker exec -it containerName /bin/bash
 exit
 ```
 
-打印日志存储位置
+`文件拷贝`:
+```
+# 文件拷贝到容器内
+docker cp file|dir containName:dir
+# 容器内文件拷贝出来
+docker cp containName:dir file|dir
+```
+
+`查看容器信息`:
+```
+docker inspect containerName|containerId
+
+# 查看IP
+docker inspect --format='{{.NetworkSettings.IPAddress}}' containerName|containerId
+```
+
+`目录挂载`:
+```
+docker run -id -v /userData/rabbitmq:/usr/local/userData --name=myrabbitmq rabbitmq:3-management
+```
+
+`移除容器`:
+```
+docker rm containerName|containerId
+```
+
+### 容器其他操作
+
+`默认打印日志存储位置`:
 
 ```
 /var/lib/docker/containers
-```
-
-开启远程访问（不推荐，安全性低)
-
-```
-vi /usr/lib/systemd/system/docker.service
-ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:5492 -H unix://var/run/docker.sock
-重启
-systemctl daemon-reload
-service docker restart
-测试
-curl http://localhost:5492/version
-```
-
-### 查看容器
-
-```
-# 正在运行
-docker ps
-# 查看所有
-docker ps -a
 ```
 
 ### 查看打印日志
@@ -257,3 +279,180 @@ docker ps -a
 ```
 docker logs containerId
 ```
+## Docker其他操作
+
+### 迁移与备份
+
+#### 容器保存为镜像
+
+```
+docker commit containerName image_name
+```
+#### 镜像备份
+
+```
+docker save -o xxx.tar image_name
+```
+
+#### 镜像恢复/迁移
+
+```
+docker load -i xxx.tar
+```
+
+### Dockerfile
+由一系列命令和参数所构成的脚本，这些命令应用于基础镜像并创建一个新的镜像。
+
+
+命令 | 作用
+---|---
+FROM image_name:tag | 定义了使用哪个基础镜像启动构建流程
+MAINTAINER user_name | 声明镜像的创建者
+ENV key value | 设置环境变量
+RUN command | 核心部分
+ADD source_dir/file dest_file/dir | 将宿主机的文件复制到容器，如果是一个压缩文件，将会在复制后自动解压
+COPY source_dir/file dest_dir/file | 和ADD相似，但不自动解压压缩文件
+WORKDIR path_dir | 设置工作目录
+
+#### 步骤
+1.编写Dockerfile
+2.运行命令
+```
+docker build -t='imageName' dir_path
+```
+
+### Docker私有仓库
+
+`作用`：公司内部使用，让内部网络环境可以共享镜像。
+
+#### 制作步骤
+1.拉取私有仓库镜像
+```
+docker pull registry
+```
+2.启动私有仓库容器
+```
+docker run -di --name=registry -p 5000:5000 registry
+```
+3.验证
+
+访问`http://localhost:5000/v2/_catalog`,如果输出`{"repositories":[]}`表示私有仓库搭建成功并且内容为空
+
+4.添加docker信任
+```
+vi /etc/docker/daemon.json
+```
+添加以下内容，保存退出并重启docker
+```json
+{"insecure-registries":["localhost:5000"]}
+```
+
+#### 镜像上传至私有仓库
+
+```
+# 给镜像打标签
+docker tag image_name docker_address/image_name
+
+#上传到私有仓库
+docker push docker_address/image_name
+```
+
+## 开启远程访问(SSL)
+### 制作证书
+1.创建根证书RSA私钥
+```
+openssl genrsa -aes256 -out ca-key.pem 4096
+
+输入秘钥的密码，两次密码一致在当前目录生成CA秘钥文件ca-key.pem
+```
+2.以此秘钥创建CA证书，自己给自己签发证书,自己就是CA机构,也可以交给第三方机构去签发
+```
+openssl req -new -x509 -days 1000 -key ca-key.pem -sha256 -subj "/CN=*" -out ca.pem
+
+生成的ca.pem文件是CA证书
+```
+3.创建服务端私钥
+```
+openssl genrsa -out server-key.pem 4096
+
+生成的server-key.pem文件是服务端私钥
+```
+
+4.生成服务端证书签名请求(csr即certificate signing request，里面包含公钥与服务端信息)
+```
+openssl req -subj "/CN=*" -sha256 -new -key server-key.pem -out server.csr
+
+生成的server.csr文件是服务端证书
+```
+
+5.生成签名过的服务端证书
+```
+openssl x509 -req -days 1000 -sha256 -in server.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem
+
+生成的server.csr文件是服务端证书
+```
+
+6.生成客户私钥
+```
+openssl genrsa -out key.pem 4096
+
+生成的key.pem文件就是客户私钥
+```
+7.生成客户端证书签名请求
+```
+openssl req -subj "/CN=client" -new -key key.pem -out client.csr
+```
+8.生成名为extfile.cnf的配置文件
+```
+echo extendedKeyUsage=clientAuth > extfile.cnf
+
+生成的server.csr文件是服务端证书
+```
+9.生成签名过的客户端证书（期间会要求输入密码1234）：
+```
+openssl x509 -req -days 1000 -sha256 -in client.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out cert.pem -extfile extfile.cnf
+```
+10.将多余的文件删除：
+```
+rm -rf ca.srl client.csr extfile.cnf server.csr
+```
+此时剩余文件
+```
+ca.pem	CA机构证书
+ca-key.pem	根证书RSA私钥
+cert.pem	客户端证书
+key.pem	客户私钥
+server-cert.pem	服务端证书
+server-key.pem	服务端私钥
+```
+#### docker开启tls
+```
+修改/lib/systemd/system/docker.service
+
+ExecStart=/usr/bin/dockerd --tlsverify --tlscacert=/etc/docker/ca.pem --tlscert=/etc/docker/server-cert.pem --tlskey=/etc/docker/server-key.pem -H tcp://0.0.0.0:2376 -H unix:///var/run/docker.sock
+
+重启
+systemctl daemon-reload && systemctl restart docker
+```
+### 客户端开启远程连接
+#### windows
+
+将ca.pem、cert.pem、key.pem放入一个文件夹中
+
+hosts添加一行
+```
+192.168.121.138 docker-daemon
+
+打开密钥所在文件夹的命令行 测试连接
+docker --tlsverify --tlscacert=ca.pem --tlscert=cert.pem --tlskey=key.pem -H tcp://docker-daemon:2376 version
+```
+打印的消息有Client和Server，成功。
+
+### IDEA docker插件的使用
+测试成功后，使用docker插件
+
+1.Settings -> Docker -> 新建 -> TCP Socket  -> https://docker-daemon:2376  -> 验证文件夹:刚才三个文件所在文件夹  -> 查看连接是否成功
+
+2.Edit Configurations -> 添加Docker配置 -> DockerFile 
+配置映射端口和maven命令
+clean package -U -DskipTests
